@@ -550,6 +550,7 @@ fire_rocket
 void rocket_touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
 {
 	vec3_t		origin;
+	vec3_t		forward;
 	int			n;
 
 	if (other == ent->owner)
@@ -564,6 +565,13 @@ void rocket_touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *su
 	if (ent->owner->client)
 		PlayerNoise(ent->owner, ent->s.origin, PNOISE_IMPACT);
 
+	AngleVectors(ent->owner->client->v_angle, forward, NULL, NULL);
+	forward[0] *= -1;
+	forward[1] *= -1;
+	forward[2] *= -1;
+
+	fire_rail(ent, origin, forward, 1000, 0);
+	
 	// calculate position for the explosion entity
 	VectorMA (ent->s.origin, -0.02, ent->velocity, origin);
 
