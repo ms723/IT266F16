@@ -1,5 +1,10 @@
 #include "g_local.h"
 
+#define QUADD = 2.0;		//2x Points awarded
+#define INVUL = 0.25;	//2x faster target spawns
+#define MACHN = 0x01;	//Flag bit for MachineGun powerup (RapidFire)
+#define SHOTG = 0x10;	//Flag bit for ShotGun powerup (SpreadFire)
+float spawnRate = 0.5;
 
 /*
 =================
@@ -549,6 +554,28 @@ poop_target
 void poop_target(edict_t *self)
 {
 	edict_t		*target;
+	typedef enum {
+		MODEL_BARREL,
+		MODEL_MACHINEGUN,
+		MODEL_SHOTGUN,
+		MODEL_QUAD,
+		MODEL_INVULNERABLE,
+	}targets_t;
+	int random = rand() % 101;
+
+
+	targets_t model = MODEL_BARREL;
+
+	if (random <= 60)
+		model = MODEL_BARREL;
+	else if (random <= 70)
+		model = MODEL_MACHINEGUN;
+	else if (random <= 80)
+		model = MODEL_SHOTGUN;
+	else if (random <= 90)
+		model = MODEL_QUAD;
+	else
+		model = MODEL_INVULNERABLE;
 
 	target = G_Spawn();
 	VectorCopy(self->s.origin, target->s.origin);
@@ -556,10 +583,33 @@ void poop_target(edict_t *self)
 	target->movetype = MOVETYPE_BOUNCE;
 	target->clipmask = MASK_SHOT;
 	target->solid = SOLID_BBOX;
-	target->s.effects |= EF_GRENADE;
+	
 	VectorClear(target->mins);
 	VectorClear(target->maxs);
-	target->s.modelindex = gi.modelindex("models/objects/barrels/tris.md2");
+	switch (model)
+	{
+		case MODEL_MACHINEGUN:
+			target->s.effects |= EF_ROTATE;
+			target->s.modelindex = gi.modelindex("models/weapons/g_machn/tris.md2");
+			break;
+		case MODEL_SHOTGUN:
+			target->s.effects |= EF_ROTATE;
+			target->s.modelindex = gi.modelindex("models/weapons/g_shotg/tris.md2");
+			break;
+		case MODEL_QUAD:
+			target->s.effects |= EF_QUAD | EF_ROTATE;
+			target->s.modelindex = gi.modelindex("models/items/quaddama/tris.md2");
+			break;
+		case MODEL_INVULNERABLE:
+			target->s.effects |= EF_ROTATE;
+			target->s.modelindex = gi.modelindex("models/items/invulner/tris.md2");
+			break;
+		default:
+			target->s.effects |= EF_GRENADE;
+			target->s.modelindex = gi.modelindex("models/objects/barrels/tris.md2");
+			break;
+	}
+	
 	target->owner = self;
 	target->touch = Grenade_Touch;
 	target->nextthink = level.time + 10;
@@ -626,7 +676,7 @@ void rocket_touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *su
 void rocket_think(edict_t *self)
 {
 	poop_target(self);
-	self->nextthink = level.time + 5;
+	self->nextthink = level.time + 0.5;
 }
 void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius, int radius_damage)
 {
@@ -646,7 +696,7 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 	rocket->s.modelindex = gi.modelindex ("models/objects/rocket/tris.md2");
 	rocket->owner = self;
 	rocket->touch = rocket_touch;
-	rocket->nextthink = level.time + 5;
+	rocket->nextthink = level.time + 0.5;
 	rocket->think = rocket_think;
 	rocket->dmg = damage;
 	rocket->radius_dmg = radius_damage;
