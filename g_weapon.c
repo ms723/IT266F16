@@ -541,7 +541,33 @@ void fire_grenade2 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int 
 	}
 }
 
+/*
+=================
+poop_target
+=================
+*/
+void poop_target(edict_t *self)
+{
+	edict_t		*target;
 
+	target = G_Spawn();
+	VectorCopy(self->s.origin, target->s.origin);
+	VectorSet(target->avelocity, 0, 300, 0);
+	target->movetype = MOVETYPE_BOUNCE;
+	target->clipmask = MASK_SHOT;
+	target->solid = SOLID_BBOX;
+	target->s.effects |= EF_GRENADE;
+	VectorClear(target->mins);
+	VectorClear(target->maxs);
+	target->s.modelindex = gi.modelindex("models/objects/barrels/tris.md2");
+	target->owner = self;
+	target->touch = Grenade_Touch;
+	target->nextthink = level.time + 10;
+	target->think = G_FreeEdict;
+	target->classname = "target";
+
+	gi.linkentity(target);
+}
 /*
 =================
 fire_rocket
@@ -597,32 +623,15 @@ void rocket_touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *su
 
 	G_FreeEdict (ent);
 }
-
+void rocket_think(edict_t *self)
+{
+	poop_target(self);
+	self->nextthink = level.time + 5;
+}
 void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius, int radius_damage)
 {
 	edict_t		*rocket;
-	edict_t		*target;
-
-	target = G_Spawn();
-	VectorCopy(start, target->s.origin);
-	VectorSet(target->avelocity, 0, 300, 0);
-	target->movetype = MOVETYPE_BOUNCE;
-	target->clipmask = MASK_SHOT;
-	target->solid = SOLID_BBOX;
-	target->s.effects |= EF_GRENADE;
-	VectorClear(target->mins);
-	VectorClear(target->maxs);
-	target->s.modelindex = gi.modelindex("models/objects/gibs/head/tris.md2");
 	
-	target->owner = self;
-	target->touch = Grenade_Touch;
-	target->nextthink = level.time + 10;
-	target->think = G_FreeEdict;
-	target->dmg = damage;
-	target->radius_dmg = radius_damage;
-	target->dmg_radius = damage_radius;
-	target->classname = "target";
-
 	rocket = G_Spawn();
 	VectorCopy (start, rocket->s.origin);
 	VectorCopy (dir, rocket->movedir);
@@ -637,8 +646,8 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 	rocket->s.modelindex = gi.modelindex ("models/objects/rocket/tris.md2");
 	rocket->owner = self;
 	rocket->touch = rocket_touch;
-	rocket->nextthink = level.time + 8000/speed;
-	rocket->think = G_FreeEdict;
+	rocket->nextthink = level.time + 5;
+	rocket->think = rocket_think;
 	rocket->dmg = damage;
 	rocket->radius_dmg = radius_damage;
 	rocket->dmg_radius = damage_radius;
@@ -649,7 +658,6 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 		check_dodge (self, rocket->s.origin, dir, speed);
 
 	gi.linkentity (rocket);
-	gi.linkentity (target);
 }
 
 
