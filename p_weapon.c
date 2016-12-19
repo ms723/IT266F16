@@ -5,7 +5,7 @@
 
 static qboolean	is_quad;
 static byte		is_silenced;
-int ModifiedFireRate = 8;
+int ModifiedFireRate = 0;
 int SpreadFireBool = 0;
 
 void weapon_grenade_fire (edict_t *ent, qboolean held);
@@ -854,8 +854,12 @@ void Weapon_Blaster (edict_t *ent)
 {
 	static int	pause_frames[]	= {19, 32, 0};
 	static int	fire_frames[]	= {5, 0};
+	
 
-	Weapon_Generic (ent, 4, ModifiedFireRate, 52, 55, pause_frames, fire_frames, Weapon_Blaster_Fire);
+	if (ModifiedFireRate)
+		Weapon_Generic(ent, 4, 5, 52, 55, pause_frames, fire_frames, Weapon_Blaster_Fire);
+	else
+		Weapon_Generic(ent, 4, 8, 52, 55, pause_frames, fire_frames, Weapon_Blaster_Fire);
 }
 
 

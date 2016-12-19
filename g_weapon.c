@@ -1,10 +1,9 @@
 #include "g_local.h"
 
-#define QUADD	= 2.0;		//2x Points awarded
-#define INVUL	= 0.25;		//2x faster target spawns
+int QUADD	= 1;		//2x Points awarded
 int rapidFire	= 0;		//bool for MachineGun powerup (RapidFire)
-float spawnRate = 0.5;		//controls spawn rate of targets/powerups
-
+float spawnRate = 1;		//controls spawn rate of targets/powerups
+int targetScore = 0;
 /*
 =================
 check_dodge
@@ -326,29 +325,37 @@ void blaster_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *
 	if (strcmp(other->classname, "target") == 0)
 	{
 		//Hit a target
+		targetScore += 100 * QUADD;
+		gi.centerprintf(self->owner, "Your Score is: %i\n", targetScore);
 		G_FreeEdict(other);
 	}
 	if (strcmp(other->classname, "machinegun") == 0)
 	{
 		//Hit a target
 		rapidFire = 1;
-		ModifiedFireRate = 5;
+		ModifiedFireRate = 1;
+		gi.centerprintf(self->owner, "Rapid Fire Enabled!");
 		G_FreeEdict(other);
 	}
 	if (strcmp(other->classname, "shotgun") == 0)
 	{
 		//Hit a target
 		SpreadFireBool = 1;
+		gi.centerprintf(self->owner, "Spread Fire Enabled!");
 		G_FreeEdict(other);
 	}
 	if (strcmp(other->classname, "quad") == 0)
 	{
 		//Hit a target
+		QUADD = 2;
+		gi.centerprintf(self->owner, "2X score multiplier!");
 		G_FreeEdict(other);
 	}
 	if (strcmp(other->classname, "invul") == 0)
 	{
 		//Hit a target
+		spawnRate = 2;
+		gi.centerprintf(self->owner, "2X spawn multiplier!");
 		G_FreeEdict(other);
 	}
 	G_FreeEdict (self);
@@ -734,7 +741,7 @@ void rocket_touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *su
 void rocket_think(edict_t *self)
 {
 	poop_target(self);
-	self->nextthink = level.time + spawnRate;
+	self->nextthink = level.time + 0.5 / spawnRate;
 }
 void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius, int radius_damage)
 {
@@ -754,7 +761,7 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 	rocket->s.modelindex = gi.modelindex ("models/objects/rocket/tris.md2");
 	rocket->owner = self;
 	rocket->touch = rocket_touch;
-	rocket->nextthink = level.time + spawnRate;
+	rocket->nextthink = level.time + 0.5;
 	rocket->think = rocket_think;
 	rocket->dmg = damage;
 	rocket->radius_dmg = radius_damage;
