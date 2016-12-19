@@ -1,7 +1,6 @@
 #include "g_local.h"
 
 int QUADD	= 1;		//2x Points awarded
-int rapidFire	= 0;		//bool for MachineGun powerup (RapidFire)
 float spawnRate = 1;		//controls spawn rate of targets/powerups
 int targetScore = 0;
 /*
@@ -322,17 +321,30 @@ void blaster_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *
 			gi.WriteDir (plane->normal);
 		gi.multicast (self->s.origin, MULTICAST_PVS);
 	}
-	if (strcmp(other->classname, "target") == 0)
+	if (strcmp(other->classname, "barrel") == 0)
 	{
 		//Hit a target
 		targetScore += 100 * QUADD;
-		gi.centerprintf(self->owner, "Your Score is: %i\n", targetScore);
+		gi.centerprintf(self->owner, "You shot a barrel.\n\nYour Score is: %i\n", targetScore);
+		G_FreeEdict(other);
+	}
+	if (strcmp(other->classname, "brian") == 0)
+	{
+		//Hit a target
+		targetScore += 50 * QUADD;
+		gi.centerprintf(self->owner, "You bastard! You Killed Brian!\n\nYour Score is: %i\n", targetScore);
+		G_FreeEdict(other);
+	}
+	if (strcmp(other->classname, "bitch") == 0)
+	{
+		//Hit a target
+		targetScore += 50 * QUADD;
+		gi.centerprintf(self->owner, "You gave that bitch a bullet.\nBitches love bullets.\n\nYour Score is: %i\n", targetScore);
 		G_FreeEdict(other);
 	}
 	if (strcmp(other->classname, "machinegun") == 0)
 	{
 		//Hit a target
-		rapidFire = 1;
 		ModifiedFireRate = 1;
 		gi.centerprintf(self->owner, "Rapid Fire Enabled!");
 		G_FreeEdict(other);
@@ -617,23 +629,32 @@ void poop_target(edict_t *self)
 		MODEL_SHOTGUN,
 		MODEL_QUAD,
 		MODEL_INVULNERABLE,
+		MODEL_BRIAN,
+		MODEL_BITCH
 	}targets_t;
 	int random = rand() % 101;
 
 
 	targets_t model = MODEL_BARREL;
 
-	if (random <= 60)
-		model = MODEL_BARREL;
-	else if (random <= 70)
+	if (random <= 10 && spawnRate != 2)
+		model = MODEL_INVULNERABLE;
+	else if (random <= 20 && !ModifiedFireRate)
 		model = MODEL_MACHINEGUN;
-	else if (random <= 80)
+	else if (random <= 30 && !SpreadFireBool)
 		model = MODEL_SHOTGUN;
-	else if (random <= 90)
+	else if (random <= 40 && QUADD != 2)
 		model = MODEL_QUAD;
 	else
-		model = MODEL_INVULNERABLE;
-
+	{
+		random = rand() % 99;
+		if (random <= 32)
+			model = MODEL_BARREL;
+		else if (random <= 65)
+			model = MODEL_BRIAN;
+		else
+			model = MODEL_BITCH;
+	}
 	target = G_Spawn();
 	VectorCopy(self->s.origin, target->s.origin);
 	VectorSet(target->avelocity, 0, 0, 0);
@@ -661,10 +682,18 @@ void poop_target(edict_t *self)
 			gi.setmodel(target, "models/items/invulner/tris.md2");
 			target->classname = "invul";
 			break;
+		case MODEL_BRIAN:
+			gi.setmodel(target, "models/monsters/brain/tris.md2");
+			target->classname = "brian";
+			break;
+		case MODEL_BITCH:
+			gi.setmodel(target, "models/monsters/bitch/tris.md2");
+			target->classname = "bitch";
+			break;
 		default:
 			target->s.effects |= EF_GRENADE;
 			gi.setmodel(target, "models/objects/barrels/tris.md2");
-			target->classname = "target";
+			target->classname = "barrel";
 			break;
 	}
 	
