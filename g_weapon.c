@@ -1,10 +1,10 @@
 #include "g_local.h"
 
-#define QUADD = 2.0;		//2x Points awarded
-#define INVUL = 0.25;	//2x faster target spawns
-#define MACHN = 0x01;	//Flag bit for MachineGun powerup (RapidFire)
-#define SHOTG = 0x10;	//Flag bit for ShotGun powerup (SpreadFire)
-float spawnRate = 0.5;
+#define QUADD	= 2.0;		//2x Points awarded
+#define INVUL	= 0.25;		//2x faster target spawns
+int rapidFire	= 0;		//bool for MachineGun powerup (RapidFire)
+int spreadFire	= 0;		//bool for ShotGun powerup (SpreadFire)
+float spawnRate = 0.5;		//controls spawn rate of targets/powerups
 
 /*
 =================
@@ -324,7 +324,11 @@ void blaster_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *
 			gi.WriteDir (plane->normal);
 		gi.multicast (self->s.origin, MULTICAST_PVS);
 	}
-
+	if (strcmp(other->classname, "target") == 0)
+	{
+		//Hit a target
+		G_FreeEdict(other);
+	}
 	G_FreeEdict (self);
 }
 
@@ -548,9 +552,33 @@ void fire_grenade2 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int 
 
 /*
 =================
+target_touch
+=================
+*/
+
+void Target_Touch(edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
+{
+	if (other == ent->owner)
+		return;
+
+	if (surf && (surf->flags & SURF_SKY))
+	{
+		G_FreeEdict(ent);
+		return;
+	}
+	G_FreeEdict(ent);
+}
+
+void target_wait(edict_t *self)
+{
+	return;
+}
+/*
+=================
 poop_target
 =================
 */
+
 void poop_target(edict_t *self)
 {
 	edict_t		*target;
@@ -579,39 +607,45 @@ void poop_target(edict_t *self)
 
 	target = G_Spawn();
 	VectorCopy(self->s.origin, target->s.origin);
-	VectorSet(target->avelocity, 0, 300, 0);
-	target->movetype = MOVETYPE_BOUNCE;
-	target->clipmask = MASK_SHOT;
-	target->solid = SOLID_BBOX;
+	VectorSet(target->avelocity, 0, 0, 0);
+	VectorSet(target->velocity, 0, 10, 0);
 	
-	VectorClear(target->mins);
-	VectorClear(target->maxs);
 	switch (model)
 	{
 		case MODEL_MACHINEGUN:
 			target->s.effects |= EF_ROTATE;
-			target->s.modelindex = gi.modelindex("models/weapons/g_machn/tris.md2");
+			gi.setmodel(target, "models/weapons/g_machn/tris.md2");
+			//target->s.modelindex = gi.modelindex("models/weapons/g_machn/tris.md2");
 			break;
 		case MODEL_SHOTGUN:
 			target->s.effects |= EF_ROTATE;
-			target->s.modelindex = gi.modelindex("models/weapons/g_shotg/tris.md2");
+			gi.setmodel(target, "models/weapons/g_shotg/tris.md2");
 			break;
 		case MODEL_QUAD:
 			target->s.effects |= EF_QUAD | EF_ROTATE;
-			target->s.modelindex = gi.modelindex("models/items/quaddama/tris.md2");
+			gi.setmodel(target, "models/items/quaddama/tris.md2");
 			break;
 		case MODEL_INVULNERABLE:
 			target->s.effects |= EF_ROTATE;
-			target->s.modelindex = gi.modelindex("models/items/invulner/tris.md2");
+			gi.setmodel(target, "models/items/invulner/tris.md2");
 			break;
 		default:
 			target->s.effects |= EF_GRENADE;
-			target->s.modelindex = gi.modelindex("models/objects/barrels/tris.md2");
+			gi.setmodel(target, "models/objects/barrels/tris.md2");
 			break;
 	}
 	
-	target->owner = self;
-	target->touch = Grenade_Touch;
+	target->monsterinfo.scale =  1.000000;
+	VectorSet(target->mins, -16, -16, -24);
+	VectorSet(target->maxs, 16, 16, 32);
+	target->movetype = MOVETYPE_STEP;
+	target->solid = SOLID_BBOX;
+	target->gravity = 1.0;
+	target->mass = 100;
+
+	target->monsterinfo.stand = target_wait;
+
+	target->touch = Target_Touch;
 	target->nextthink = level.time + 10;
 	target->think = G_FreeEdict;
 	target->classname = "target";
@@ -676,7 +710,7 @@ void rocket_touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *su
 void rocket_think(edict_t *self)
 {
 	poop_target(self);
-	self->nextthink = level.time + 0.5;
+	self->nextthink = level.time + spawnRate;
 }
 void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius, int radius_damage)
 {
@@ -696,7 +730,7 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 	rocket->s.modelindex = gi.modelindex ("models/objects/rocket/tris.md2");
 	rocket->owner = self;
 	rocket->touch = rocket_touch;
-	rocket->nextthink = level.time + 0.5;
+	rocket->nextthink = level.time + spawnRate;
 	rocket->think = rocket_think;
 	rocket->dmg = damage;
 	rocket->radius_dmg = radius_damage;
@@ -729,11 +763,12 @@ void fire_rail (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick
 	VectorCopy (start, from);
 	ignore = self;
 	water = false;
-	mask = MASK_SHOT|CONTENTS_SLIME|CONTENTS_LAVA;
+	mask = MASK_ALL;
 	while (ignore)
 	{
 		tr = gi.trace (from, NULL, NULL, end, ignore, mask);
-
+		
+		gi.bprintf(PRINT_HIGH, "Ignored Classname: %s\n", tr.ent->classname);
 		if (tr.contents & (CONTENTS_SLIME|CONTENTS_LAVA))
 		{
 			mask &= ~(CONTENTS_SLIME|CONTENTS_LAVA);
@@ -744,12 +779,17 @@ void fire_rail (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick
 			//ZOID--added so rail goes through SOLID_BBOX entities (gibs, etc)
 			if ((tr.ent->svflags & SVF_MONSTER) || (tr.ent->client) ||
 				(tr.ent->solid == SOLID_BBOX))
+			{
 				ignore = tr.ent;
+			}
 			else
 				ignore = NULL;
 
 			if ((tr.ent != self) && (tr.ent->takedamage))
 				T_Damage (tr.ent, self, self, aimdir, tr.endpos, tr.plane.normal, damage, kick, 0, MOD_RAILGUN);
+
+			
+				
 		}
 
 		VectorCopy (tr.endpos, from);

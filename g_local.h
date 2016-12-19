@@ -428,8 +428,6 @@ typedef struct
 	int			power_armor_power;
 } monsterinfo_t;
 
-
-
 extern	game_locals_t	game;
 extern	level_locals_t	level;
 extern	game_import_t	gi;

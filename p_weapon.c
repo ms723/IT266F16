@@ -3,6 +3,7 @@
 #include "g_local.h"
 #include "m_player.h"
 
+extern int ModifiedFireRate = 18;
 
 static qboolean	is_quad;
 static byte		is_silenced;
@@ -1333,7 +1334,7 @@ void Weapon_Railgun (edict_t *ent)
 	static int	pause_frames[]	= {56, 0};
 	static int	fire_frames[]	= {4, 0};
 
-	Weapon_Generic (ent, 3, 18, 56, 61, pause_frames, fire_frames, weapon_railgun_fire);
+	Weapon_Generic (ent, 3, ModifiedFireRate, 56, 61, pause_frames, fire_frames, weapon_railgun_fire);
 }
 
 
