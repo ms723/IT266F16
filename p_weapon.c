@@ -3,11 +3,10 @@
 #include "g_local.h"
 #include "m_player.h"
 
-extern int ModifiedFireRate = 18;
-
 static qboolean	is_quad;
 static byte		is_silenced;
-
+int ModifiedFireRate = 8;
+int SpreadFireBool = 0;
 
 void weapon_grenade_fire (edict_t *ent, qboolean held);
 
@@ -829,12 +828,25 @@ void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, in
 void Weapon_Blaster_Fire (edict_t *ent)
 {
 	int		damage;
+	vec3_t tempvec;
 
 	if (deathmatch->value)
 		damage = 15;
 	else
 		damage = 10;
 	Blaster_Fire (ent, vec3_origin, damage, false, EF_BLASTER);
+
+	if (SpreadFireBool)
+	{
+		VectorSet(tempvec, 0, 8, 0);
+		VectorAdd(tempvec, vec3_origin, tempvec);
+		Blaster_Fire(ent, tempvec, damage, false, EF_BLASTER);
+
+		VectorSet(tempvec, 0, -8, 0);
+		VectorAdd(tempvec, vec3_origin, tempvec);
+		Blaster_Fire(ent, tempvec, damage, false, EF_BLASTER);
+	}
+
 	ent->client->ps.gunframe++;
 }
 
@@ -843,7 +855,7 @@ void Weapon_Blaster (edict_t *ent)
 	static int	pause_frames[]	= {19, 32, 0};
 	static int	fire_frames[]	= {5, 0};
 
-	Weapon_Generic (ent, 4, 8, 52, 55, pause_frames, fire_frames, Weapon_Blaster_Fire);
+	Weapon_Generic (ent, 4, ModifiedFireRate, 52, 55, pause_frames, fire_frames, Weapon_Blaster_Fire);
 }
 
 

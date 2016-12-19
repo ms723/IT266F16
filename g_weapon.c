@@ -3,7 +3,6 @@
 #define QUADD	= 2.0;		//2x Points awarded
 #define INVUL	= 0.25;		//2x faster target spawns
 int rapidFire	= 0;		//bool for MachineGun powerup (RapidFire)
-int spreadFire	= 0;		//bool for ShotGun powerup (SpreadFire)
 float spawnRate = 0.5;		//controls spawn rate of targets/powerups
 
 /*
@@ -329,6 +328,29 @@ void blaster_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *
 		//Hit a target
 		G_FreeEdict(other);
 	}
+	if (strcmp(other->classname, "machinegun") == 0)
+	{
+		//Hit a target
+		rapidFire = 1;
+		ModifiedFireRate = 5;
+		G_FreeEdict(other);
+	}
+	if (strcmp(other->classname, "shotgun") == 0)
+	{
+		//Hit a target
+		SpreadFireBool = 1;
+		G_FreeEdict(other);
+	}
+	if (strcmp(other->classname, "quad") == 0)
+	{
+		//Hit a target
+		G_FreeEdict(other);
+	}
+	if (strcmp(other->classname, "invul") == 0)
+	{
+		//Hit a target
+		G_FreeEdict(other);
+	}
 	G_FreeEdict (self);
 }
 
@@ -566,7 +588,7 @@ void Target_Touch(edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *sur
 		G_FreeEdict(ent);
 		return;
 	}
-	G_FreeEdict(ent);
+	//G_FreeEdict(ent);
 }
 
 void target_wait(edict_t *self)
@@ -615,23 +637,27 @@ void poop_target(edict_t *self)
 		case MODEL_MACHINEGUN:
 			target->s.effects |= EF_ROTATE;
 			gi.setmodel(target, "models/weapons/g_machn/tris.md2");
-			//target->s.modelindex = gi.modelindex("models/weapons/g_machn/tris.md2");
+			target->classname = "machinegun";
 			break;
 		case MODEL_SHOTGUN:
 			target->s.effects |= EF_ROTATE;
 			gi.setmodel(target, "models/weapons/g_shotg/tris.md2");
+			target->classname = "shotgun";
 			break;
 		case MODEL_QUAD:
 			target->s.effects |= EF_QUAD | EF_ROTATE;
 			gi.setmodel(target, "models/items/quaddama/tris.md2");
+			target->classname = "quad";
 			break;
 		case MODEL_INVULNERABLE:
 			target->s.effects |= EF_ROTATE;
 			gi.setmodel(target, "models/items/invulner/tris.md2");
+			target->classname = "invul";
 			break;
 		default:
 			target->s.effects |= EF_GRENADE;
 			gi.setmodel(target, "models/objects/barrels/tris.md2");
+			target->classname = "target";
 			break;
 	}
 	
@@ -648,8 +674,6 @@ void poop_target(edict_t *self)
 	target->touch = Target_Touch;
 	target->nextthink = level.time + 10;
 	target->think = G_FreeEdict;
-	target->classname = "target";
-
 	gi.linkentity(target);
 }
 /*
