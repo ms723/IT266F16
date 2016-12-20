@@ -684,41 +684,59 @@ void poop_target(edict_t *self)
 		case MODEL_MACHINEGUN:
 			target->s.effects |= EF_ROTATE;
 			gi.setmodel(target, "models/weapons/g_machn/tris.md2");
+			target->monsterinfo.scale = 1.000000;
+			VectorSet(target->mins, -16, -16, -5);
+			VectorSet(target->maxs, 16, 16, 32);
 			target->classname = "machinegun";
 			break;
 		case MODEL_SHOTGUN:
 			target->s.effects |= EF_ROTATE;
 			gi.setmodel(target, "models/weapons/g_shotg/tris.md2");
+			target->monsterinfo.scale = 1.000000;
+			VectorSet(target->mins, -16, -16, -5);
+			VectorSet(target->maxs, 16, 16, 32);
 			target->classname = "shotgun";
 			break;
 		case MODEL_QUAD:
 			target->s.effects |= EF_QUAD | EF_ROTATE;
 			gi.setmodel(target, "models/items/quaddama/tris.md2");
+			target->monsterinfo.scale = 1.000000;
+			VectorSet(target->mins, -16, -16, -5);
+			VectorSet(target->maxs, 16, 16, 32);
 			target->classname = "quad";
 			break;
 		case MODEL_INVULNERABLE:
 			target->s.effects |= EF_ROTATE;
 			gi.setmodel(target, "models/items/invulner/tris.md2");
+			target->monsterinfo.scale = 1.000000;
+			VectorSet(target->mins, -16, -16, -5);
+			VectorSet(target->maxs, 16, 16, 32);
 			target->classname = "invul";
 			break;
 		case MODEL_BRIAN:
 			gi.setmodel(target, "models/monsters/brain/tris.md2");
+			target->monsterinfo.scale = 1.000000;
+			VectorSet(target->mins, -16, -16, -24);
+			VectorSet(target->maxs, 16, 16, 32);
 			target->classname = "brian";
 			break;
 		case MODEL_BITCH:
 			gi.setmodel(target, "models/monsters/bitch/tris.md2");
+			target->monsterinfo.scale = 1.000000;
+			VectorSet(target->mins, -16, -16, -5);
+			VectorSet(target->maxs, 16, 16, 56);
 			target->classname = "bitch";
 			break;
 		default:
 			target->s.effects |= EF_GRENADE;
 			gi.setmodel(target, "models/objects/barrels/tris.md2");
+			target->monsterinfo.scale = 1.000000;
+			VectorSet(target->mins, -16, -16, -5);
+			VectorSet(target->maxs, 16, 16, 56);
 			target->classname = "barrel";
 			break;
 	}
 	
-	target->monsterinfo.scale =  1.000000;
-	VectorSet(target->mins, -16, -16, -24);
-	VectorSet(target->maxs, 16, 16, 32);
 	target->movetype = MOVETYPE_STEP;
 	target->solid = SOLID_BBOX;
 	target->gravity = 1.0;
