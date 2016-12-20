@@ -1,8 +1,11 @@
 #include "g_local.h"
 
-int QUADD	= 1;		//2x Points awarded
-float spawnRate = 1;		//controls spawn rate of targets/powerups
-int targetScore = 0;
+int QUADD	= 1;							//2x Points awarded
+float spawnRate = 1;						//controls spawn rate of targets/powerups
+int targetScore = 0;						//Points from shooting targets
+int comboMultiplier = 1;					//Used for combos
+char *lastTargetClass = "COMBO_BREAKER";	//Store name of last target type to check if combo should grow.
+
 /*
 =================
 check_dodge
@@ -321,49 +324,72 @@ void blaster_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *
 			gi.WriteDir (plane->normal);
 		gi.multicast (self->s.origin, MULTICAST_PVS);
 	}
+
+
 	if (strcmp(other->classname, "barrel") == 0)
 	{
+		//Combo Multiplier
+		if (strcmp(other->classname, lastTargetClass) == 0)
+			comboMultiplier++;
+		else
+			comboMultiplier = 1;
+		lastTargetClass = "barrel";
+
 		//Hit a target
-		targetScore += 100 * QUADD;
-		gi.centerprintf(self->owner, "You shot a barrel.\n\nYour Score is: %i\n", targetScore);
+		targetScore += 100 * QUADD * comboMultiplier;
+		gi.centerprintf(self->owner, "You shot a barrel.\n\nYour Score is: %i\nCombo Multiplier: %i\n", targetScore, comboMultiplier);
 		G_FreeEdict(other);
 	}
-	if (strcmp(other->classname, "brian") == 0)
+	else if (strcmp(other->classname, "brian") == 0)
 	{
+		//Combo Multiplier
+		if (strcmp(other->classname, lastTargetClass) == 0)
+			comboMultiplier++;
+		else
+			comboMultiplier = 1;
+		lastTargetClass = "brian";
+
 		//Hit a target
-		targetScore += 50 * QUADD;
-		gi.centerprintf(self->owner, "You bastard! You Killed Brian!\n\nYour Score is: %i\n", targetScore);
+		targetScore += 50 * QUADD * comboMultiplier;
+		gi.centerprintf(self->owner, "You bastard! You Killed Brian!\n\nYour Score is: %i\nCombo Multiplier: %i\n", targetScore, comboMultiplier);
 		G_FreeEdict(other);
 	}
-	if (strcmp(other->classname, "bitch") == 0)
+	else if (strcmp(other->classname, "bitch") == 0)
 	{
+		//Combo Multiplier
+		if (strcmp(other->classname, lastTargetClass) == 0)
+			comboMultiplier++;
+		else
+			comboMultiplier = 1;
+		lastTargetClass = "bitch";
+
 		//Hit a target
-		targetScore += 50 * QUADD;
-		gi.centerprintf(self->owner, "You gave that bitch a bullet.\nBitches love bullets.\n\nYour Score is: %i\n", targetScore);
+		targetScore += 50 * QUADD * comboMultiplier;
+		gi.centerprintf(self->owner, "You gave that bitch a bullet.\nBitches love bullets.\n\nYour Score is: %i\nCombo Multiplier: %i\n", targetScore, comboMultiplier);
 		G_FreeEdict(other);
 	}
-	if (strcmp(other->classname, "machinegun") == 0)
+	else if (strcmp(other->classname, "machinegun") == 0)
 	{
 		//Hit a target
 		ModifiedFireRate = 1;
 		gi.centerprintf(self->owner, "Rapid Fire Enabled!");
 		G_FreeEdict(other);
 	}
-	if (strcmp(other->classname, "shotgun") == 0)
+	else if (strcmp(other->classname, "shotgun") == 0)
 	{
 		//Hit a target
 		SpreadFireBool = 1;
 		gi.centerprintf(self->owner, "Spread Fire Enabled!");
 		G_FreeEdict(other);
 	}
-	if (strcmp(other->classname, "quad") == 0)
+	else if (strcmp(other->classname, "quad") == 0)
 	{
 		//Hit a target
 		QUADD = 2;
 		gi.centerprintf(self->owner, "2X score multiplier!");
 		G_FreeEdict(other);
 	}
-	if (strcmp(other->classname, "invul") == 0)
+	else if (strcmp(other->classname, "invul") == 0)
 	{
 		//Hit a target
 		spawnRate = 2;
