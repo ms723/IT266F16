@@ -1753,12 +1753,46 @@ void ClientBeginServerFrame (edict_t *ent)
 {
 	gclient_t	*client;
 	int			buttonMask;
-
+	char		*message = malloc(1024);
 	if (level.intermissiontime)
 		return;
 
 	client = ent->client;
-
+	sprintf(message, "");
+	if (strcmp(lastTargetClass, "barrel") == 0)
+	{
+		int points = 100 * QUADD*comboMultiplier;
+		sprintf(message, "%sYou shot a barrel.\n%i Points!\n\n", message, points);
+	}
+	else if (strcmp(lastTargetClass, "brian") == 0)
+	{
+		int points = 50 * QUADD*comboMultiplier;
+		sprintf(message, "%sYou bastard! You Killed Brian!\n%i Points!\n\n", message, points);
+	}
+	else if (strcmp(lastTargetClass, "bitch") == 0)
+	{
+		int points = 50 * QUADD*comboMultiplier;
+		sprintf(message, "%sYou gave that bitch a bullet.\nBitches love bullets.\n%i Points!\n\n", message, points);
+	}
+	if (spawnRate != 1)
+	{
+		sprintf(message, "%s2X spawn multiplier!\n", message);
+	}
+	if (ModifiedFireRate)
+	{
+		sprintf(message, "%sRapid Fire Enabled!\n", message);
+	}
+	if (SpreadFireBool)
+	{
+		sprintf(message, "%sSpread Fire Enabled!\n", message);
+	}
+	if (QUADD != 1)
+	{
+		sprintf(message, "%s2X score multiplier!\n", message);
+	}
+	sprintf(message, "%s\nCurrent Score: %i\nCurrent Combo Multiplier: %ix\n", message, targetScore, comboMultiplier);
+	gi.centerprintf(ent, message);
+	free(message);
 	if (deathmatch->value &&
 		client->pers.spectator != client->resp.spectator &&
 		(level.time - client->respawn_time) >= 5) {

@@ -3,7 +3,11 @@
 #include "q_shared.h"
 extern int ModifiedFireRate;
 extern int SpreadFireBool;
-extern int targetScore;
+extern unsigned long targetScore;
+extern int comboMultiplier;
+extern char *lastTargetClass;
+extern float spawnRate;
+extern int QUADD;
 // define GAME_INCLUDE so that game.h does not define the
 // short, server-visible gclient_t and edict_t structures,
 // because we define the full size ones in this file

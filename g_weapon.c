@@ -2,7 +2,7 @@
 
 int QUADD	= 1;							//2x Points awarded
 float spawnRate = 1;						//controls spawn rate of targets/powerups
-int targetScore = 0;						//Points from shooting targets
+unsigned long targetScore = 0;				//Points from shooting targets
 int comboMultiplier = 1;					//Used for combos
 char *lastTargetClass = "COMBO_BREAKER";	//Store name of last target type to check if combo should grow.
 
@@ -337,7 +337,6 @@ void blaster_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *
 
 		//Hit a target
 		targetScore += 100 * QUADD * comboMultiplier;
-		gi.centerprintf(self->owner, "You shot a barrel.\n\nYour Score is: %i\nCombo Multiplier: %i\n", targetScore, comboMultiplier);
 		G_FreeEdict(other);
 	}
 	else if (strcmp(other->classname, "brian") == 0)
@@ -351,7 +350,6 @@ void blaster_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *
 
 		//Hit a target
 		targetScore += 50 * QUADD * comboMultiplier;
-		gi.centerprintf(self->owner, "You bastard! You Killed Brian!\n\nYour Score is: %i\nCombo Multiplier: %i\n", targetScore, comboMultiplier);
 		G_FreeEdict(other);
 	}
 	else if (strcmp(other->classname, "bitch") == 0)
@@ -365,35 +363,30 @@ void blaster_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *
 
 		//Hit a target
 		targetScore += 50 * QUADD * comboMultiplier;
-		gi.centerprintf(self->owner, "You gave that bitch a bullet.\nBitches love bullets.\n\nYour Score is: %i\nCombo Multiplier: %i\n", targetScore, comboMultiplier);
 		G_FreeEdict(other);
 	}
 	else if (strcmp(other->classname, "machinegun") == 0)
 	{
 		//Hit a target
 		ModifiedFireRate = 1;
-		gi.centerprintf(self->owner, "Rapid Fire Enabled!");
 		G_FreeEdict(other);
 	}
 	else if (strcmp(other->classname, "shotgun") == 0)
 	{
 		//Hit a target
 		SpreadFireBool = 1;
-		gi.centerprintf(self->owner, "Spread Fire Enabled!");
 		G_FreeEdict(other);
 	}
 	else if (strcmp(other->classname, "quad") == 0)
 	{
 		//Hit a target
 		QUADD = 2;
-		gi.centerprintf(self->owner, "2X score multiplier!");
 		G_FreeEdict(other);
 	}
 	else if (strcmp(other->classname, "invul") == 0)
 	{
 		//Hit a target
 		spawnRate = 2;
-		gi.centerprintf(self->owner, "2X spawn multiplier!");
 		G_FreeEdict(other);
 	}
 	G_FreeEdict (self);
